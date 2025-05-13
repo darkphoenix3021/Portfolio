@@ -13,6 +13,7 @@ document.addEventListener('DOMContentLoaded', () => {
     scrollToTop();
     formValidation();
     themeToggle();
+    initHeartLikes();
     
     // Log initialization
     console.log('Portfolio website initialized successfully');
@@ -82,7 +83,7 @@ function typingEffect() {
     const typedTextSpan = document.querySelector('.typed-text');
     
     if (typedTextSpan) {
-        const texts = ['Web Developer', 'UI/UX Designer', 'Photographer', 'Freelancer']; // Replace with your roles
+        const texts = ['Linux Administrator', 'Python Developer', 'Content Creator', 'Web Designer']; // Updated roles
         let textIndex = 0;
         let charIndex = 0;
         let isDeleting = false;
@@ -361,7 +362,7 @@ function formValidation() {
                 
                 // Prepare template parameters
                 const templateParams = {
-                    to_email: 'akshit2022@outlook.com',
+                    to_email: 'kartik.bisht@example.com',
                     from_name: name.value,
                     from_email: email.value,
                     subject: subject.value,
@@ -553,3 +554,74 @@ function themeToggle() {
     }
 }
 
+/*===== HEART/LIKE BUTTON FUNCTIONALITY =====*/
+function initHeartLikes() {
+    const heartButtons = document.querySelectorAll('.heart-button');
+    
+    if (!heartButtons.length) return;
+    
+    // Initialize heart buttons with saved likes from localStorage
+    heartButtons.forEach(button => {
+        const projectId = button.getAttribute('data-project-id');
+        const heartIcon = button.querySelector('.heart-icon');
+        const heartCount = button.querySelector('.heart-count');
+        
+        // Get saved likes from localStorage
+        const likes = getLikesFromStorage();
+        
+        // Update UI with saved likes
+        if (likes[projectId]) {
+            heartCount.textContent = likes[projectId].count;
+            if (likes[projectId].liked) {
+                heartIcon.classList.add('liked');
+            }
+        }
+        
+        // Add click event listener
+        button.addEventListener('click', () => {
+            const isLiked = heartIcon.classList.contains('liked');
+            const currentCount = parseInt(heartCount.textContent);
+            
+            // Toggle like status
+            if (isLiked) {
+                heartIcon.classList.remove('liked');
+                heartCount.textContent = Math.max(0, currentCount - 1);
+            } else {
+                heartIcon.classList.add('liked');
+                heartCount.textContent = currentCount + 1;
+                
+                // Add animation class
+                heartIcon.classList.add('heart-animation');
+                
+                // Remove animation class after animation completes
+                setTimeout(() => {
+                    heartIcon.classList.remove('heart-animation');
+                }, 500);
+            }
+            
+            // Save to localStorage
+            saveLikeToStorage(projectId, !isLiked, parseInt(heartCount.textContent));
+        });
+    });
+}
+
+// Get likes from localStorage
+function getLikesFromStorage() {
+    const savedLikes = localStorage.getItem('projectLikes');
+    return savedLikes ? JSON.parse(savedLikes) : {};
+}
+
+// Save like to localStorage
+function saveLikeToStorage(projectId, liked, count) {
+    const likes = getLikesFromStorage();
+    
+    likes[projectId] = {
+        liked: liked,
+        count: count
+    };
+    
+    localStorage.setItem('projectLikes', JSON.stringify(likes));
+    
+    // Log the update (optional, for debugging)
+    console.log(`Project ${projectId} like updated: ${liked ? 'Liked' : 'Unliked'}, Count: ${count}`);
+}
